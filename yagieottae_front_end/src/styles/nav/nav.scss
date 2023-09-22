@@ -1,0 +1,41 @@
+#container-nav {
+	position: fixed;
+	top: 0;
+	width: 100vw;
+	height: 80px;
+	background-color: white;
+	z-index: 999;
+	padding: 10px 30px;
+
+	#img-logo {
+		width: 25px;
+		height: 25px;
+		margin-left: 2px;
+	}
+
+	#text-logo {
+		font-size: 1.7rem;
+		font-family: 'Nanum Pen Script';
+	}
+
+	.img-profile {
+		width: 60px;
+		height: 60px;
+		border-radius: 50%;
+	}
+}
+
+.nav-left-side {
+	background-color: white;
+	width: 35vw !important;
+	min-width: 300px;
+	height: calc(100vh - 80px);
+	position: fixed;
+	top: 80px;
+	left: 0;
+	z-index: 999;
+
+	a {
+		padding: 0 10px;
+	}
+}

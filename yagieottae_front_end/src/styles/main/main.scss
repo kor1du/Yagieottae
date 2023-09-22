@@ -1,0 +1,104 @@
+#container-main {
+	#container-alram-list {
+		.list-box {
+			margin: 50px 0px;
+
+			#text-today-durg-list {
+				margin: 10px 0;
+				font-size: 1.5rem;
+			}
+
+			.today-pill-list {
+				padding-left: 10px;
+			}
+
+			.today-pill {
+				width: 100%;
+				margin: 20px 0px;
+				padding: 5px 10px;
+				height: 200px;
+				border-radius: 15px;
+				border: 3px solid #e3e5e8;
+
+				.div-pill-info {
+					.img-pills {
+						width: 55px;
+						height: 55px;
+						background-color: lightgray;
+						border-radius: 50%;
+						margin: 10px 5px 10px 0px;
+						border: 3px solid black;
+					}
+					.div-pill-name {
+						width: 130px;
+						margin-right: 10px;
+						.text-pill-name {
+							font-size: 1.3rem;
+							width: 100%;
+							margin: 0;
+							overflow: hidden;
+							text-overflow: ellipsis;
+							white-space: nowrap;
+						}
+					}
+				}
+
+				.div-pill-description {
+					width: 100%;
+					.btn-alram-description {
+						padding: 7px 10px;
+						width: 100%;
+						text-align: left;
+						margin: 5px 0;
+					}
+				}
+			}
+		}
+	}
+
+	.drug-store-list {
+		.find-hospital {
+			padding-left: 15px;
+		}
+
+		.drug-store {
+			margin: 0 10px;
+
+			.img-drug-store {
+				background-color: lightgray;
+				width: 65px;
+				height: 65px;
+				border-radius: 50%;
+			}
+
+			.drug-store-name {
+				margin-top: 10px;
+			}
+		}
+	}
+}
+
+.modal-view-all-alrams {
+	.pill-list {
+		.img-drug {
+			width: 50px;
+			height: 50px;
+			border-radius: 50%;
+			margin: 10px 5px 10px 0px;
+			border: 3px solid black;
+		}
+
+		.div-item-name {
+			width: 145px;
+			margin-right: 5px;
+			.text-item-name {
+				font-size: 1.3rem;
+				width: 100%;
+				margin: 0;
+				overflow: hidden;
+				text-overflow: ellipsis;
+				white-space: nowrap;
+			}
+		}
+	}
+}

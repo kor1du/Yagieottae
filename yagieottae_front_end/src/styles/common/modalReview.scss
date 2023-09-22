@@ -1,0 +1,74 @@
+.modal-review {
+	#img-pill {
+		width: 50px;
+		height: 50px;
+		border: 3px solid black;
+		border-radius: 50%;
+	}
+
+	#text-pill-name {
+		margin: 0 10px;
+	}
+
+	.modal-body {
+		.div-written-review {
+			padding: 0 10px;
+			border: 3px solid lightgray;
+			border-radius: 15px;
+			margin-bottom: 20px;
+
+			.div-profile {
+				width: 275px;
+				margin: 5px 0px;
+
+				.img-profile-img {
+					width: 45px;
+					height: 45px;
+					border-radius: 50%;
+					border: 2px solid black;
+					margin-right: 10px;
+				}
+
+				.div-btn-edit-delete {
+					Button {
+						margin-left: 10px;
+						font-size: 0.6rem;
+					}
+				}
+			}
+
+			.review-info {
+				p {
+					margin: 0;
+				}
+
+				.text-rate,
+				.text-edit-date {
+					font-size: 0.65rem;
+				}
+			}
+		}
+
+		.textarea-review {
+			padding-left: 0;
+			width: 90%;
+		}
+
+		.div-icon-review-star {
+			margin: 25px 0;
+
+			.icon-review-star {
+				margin: 0 5px;
+				color: lightgray;
+			}
+			.icon-review-star.active {
+				fill: RGB(254, 157, 0);
+			}
+		}
+
+		#btn-review-submit {
+			width: 150px;
+			margin: 15px 0;
+		}
+	}
+}

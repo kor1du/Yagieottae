@@ -1,0 +1,52 @@
+.modal-set-alram {
+	::after {
+		width: 100vw;
+		height: 100vh;
+		background-color: black;
+	}
+	.modal-body {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+
+		#set-alram-hour,
+		#set-alram-minute {
+			width: 150px;
+		}
+
+		.colon {
+			margin: 0 10px;
+		}
+
+		.week {
+			.checkbox {
+				background-color: #ebebed;
+				padding: 5px 10px;
+				border-radius: 50%;
+
+				input {
+					display: none;
+				}
+			}
+			.checkbox.active {
+				background-color: #a048e5;
+				color: white;
+			}
+		}
+
+		.time-to-take-medicine {
+			#select-taking-time {
+				width: 35%;
+				margin-right: 10px;
+			}
+			#label-taking-time {
+				margin: 0 10px;
+			}
+		}
+
+		.btn-set-alram {
+			width: 150px;
+			margin: 0 20px;
+		}
+	}
+}

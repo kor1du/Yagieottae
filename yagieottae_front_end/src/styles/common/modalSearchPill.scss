@@ -1,0 +1,44 @@
+#container-search-pill {
+	#btn-search {
+		width: 120px;
+		margin-left: 10px;
+	}
+
+	#input-search-pill {
+		width: 180px;
+	}
+}
+
+.modal-search-pill {
+	.pill-list {
+		height: auto;
+
+		.pill {
+			width: 310px;
+			height: 60px;
+			background-color: #d3d9e5;
+			margin: 10px 0;
+			padding: 5px;
+			border-radius: 15px;
+
+			.div-text-modal-body-pill {
+				width: 140px;
+				margin: 0 5px;
+				.text-modal-body-pill {
+					width: 100%;
+					text-align: left;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+					margin: 0;
+				}
+			}
+
+			.btn-pill-info {
+				width: 100px;
+				height: 40px;
+				font-size: 0.8rem;
+			}
+		}
+	}
+}
