@@ -2,6 +2,7 @@ package com.yagieottae_back_end.Controller.User;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yagieottae_back_end.Component.TestBase;
 import com.yagieottae_back_end.Configuration.TestMockConfig;
 import com.yagieottae_back_end.Dto.ResponseDto;
 import com.yagieottae_back_end.Exception.CustomBadRequestException;
@@ -18,89 +19,77 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+
+import java.util.Date;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Import({TestMockConfig.class})
-@Slf4j
-@Transactional
-public class TestReissue
+public class TestReissue extends TestBase
 {
-    private CustomBadRequestException customBadRequestException;
-    private ResponseDto expectedResponseDto;
-    private String accessToken;
-    private String refreshToken;
-    @Autowired
-    private UserRepository userRepository;
+    private final String url = "/user/reissue";
     @Autowired
     private UserService userService;
     @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ModelMapper modelMapper;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private GlobalControllerExceptionHandler globalControllerExceptionHandler;
-
-    @BeforeEach
-    public void beforeEach(TestInfo testInfo) throws Exception
-    {
-        log.info("{} 테스트 시작", testInfo.getDisplayName());
-    }
+    private RedisTemplate<String, String> redisTemplate;
 
     //mockTest
-    private void doMockTest(ResponseDto expectedResponseDto) throws Exception
+    private ResultActions excuteMockTest(ResponseDto expectedResponseDto) throws Exception
     {
-        MvcResult result = mockMvc.perform(post("/user/reissue")
-                                          .param("refreshToken", refreshToken))
-                                  .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
-                                  .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()))
-                                  .andReturn();
+        return mockMvc.perform(post(url).param("refreshToken", refreshToken));
+    }
 
-        String responseString = result.getResponse().getContentAsString();
+    private void validateServerResponse(ResultActions resultActions) throws Exception
+    {
+        resultActions
+                .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
+                .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()))
+                .andReturn();
+
+        String responseString = resultActions
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         JsonNode responseJson = objectMapper.readTree(responseString);
+
+        //refreshToken 초기화
+        //@formatter:off
+        JsonNode newTokenJson=responseJson.get("body").get("jwtTokenDto");
+        JwtTokenDto newTokenDto = JwtTokenDto.builder()
+                .accessToken(newTokenJson.get("accessToken").textValue())
+                .refreshToken(newTokenJson.get("refreshToken").textValue())
+                .build();
+        //@formatter:on
+        accessToken = newTokenDto.getAccessToken();
+        refreshToken = newTokenDto.getRefreshToken();
 
         System.out.println("서버 응답: \n" + responseJson.toPrettyString());
     }
 
     @Test
     @DisplayName("[200][토큰 재발급]")
-    @Transactional
-    public void test_Reissue() throws Exception
+    public void reissue() throws Exception
     {
-        expectedResponseDto = userService.reissue(refreshToken);
+        //given
+        setExpectedResponseDto(HttpStatus.OK.value(), "토큰이 재발급 되었습니다.", null);
 
-        JwtTokenDto newJwtToken = objectMapper.treeToValue(expectedResponseDto.getBody().get("jwtTokenDto"), JwtTokenDto.class); //refreshToken을 새로 재발급된 토큰으로 교체
-        refreshToken = newJwtToken.getRefreshToken();
+        //when
+        ResultActions resultActions = excuteMockTest(expectedResponseDto);
 
-        doMockTest(expectedResponseDto);
-    }
-
-    @Test
-    @DisplayName("[401][토큰 재발급] 잘못된 refreshToken 전송")
-    @Transactional
-    public void test_Reissue_WrongRefreshToken() throws Exception
-    {
-
-        JwtException expectedJwtException = new JwtException("잘못된 JWT 시그니처");
-        expectedResponseDto = globalControllerExceptionHandler.handleJwtException(expectedJwtException).getBody();
-
-        refreshToken = "wrongToken";
-
-        doMockTest(expectedResponseDto);
-    }
-
-    @AfterEach
-    public void afterEach(TestInfo testInfo)
-    {
-        log.info("{} 테스트 끝", testInfo.getDisplayName());
+        //then
+        validateServerResponse(resultActions);
+        String redisRefreshToken = redisTemplate
+                .opsForValue()
+                .get("RT:" + user.getUserId()); //redis에 저장되어있는 refreshToken 정보
+        assertThat(refreshToken).isEqualTo(redisRefreshToken);
     }
 }

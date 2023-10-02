@@ -36,7 +36,7 @@ public class Alram
     private Boolean beforeMeal; // true:식전 복용 false: 식후 복용
 
     @NotNull
-    private Long dosingTime; //복용시간
+    private int dosingTime; //복용시간
 
     @NotNull
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss", timezone = "Asia/Seoul")

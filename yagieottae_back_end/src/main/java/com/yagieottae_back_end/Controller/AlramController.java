@@ -23,10 +23,10 @@ public class AlramController
     }
 
     //알람 목록을 가져온다
-    @GetMapping("/findAlrams")
-    public ResponseEntity<ResponseDto> findAlrams(@RequestParam Boolean getToday)
+    @GetMapping("/getAlrams")
+    public ResponseEntity<ResponseDto> getAlrams(@RequestParam Boolean getToday)
     {
-        return ResponseEntity.ok(alramService.findAlrams(getToday));
+        return ResponseEntity.ok(alramService.getAlrams(getToday));
     }
 
     /**

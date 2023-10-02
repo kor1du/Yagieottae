@@ -14,6 +14,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -35,54 +36,49 @@ public class SecurityConfig
     @Bean
     public WebSecurityCustomizer configure()
     {
-        return web -> web.ignoring().requestMatchers
-                (
+        return web -> web
+                .ignoring()
+                .requestMatchers(new AntPathRequestMatcher("/h2-console/**"))
+                .requestMatchers(
                         //UserController
-                        "/user/login",
-                        "/user/signup",
-                        "/user/reissue",
-                        "/user/logout",
+                        "/user/login", "/user/signup", "/user/reissue", "/user/logout",
                         //PillController
-                        "/pill/findPill",
+                        "/pill/getPill",
                         //ReviewController
                         "/review/read",
                         //FileController
                         "/upload/",
                         //Swagger API
-                        "/swagger-ui/**",
-                        "/v3/api-docs/**"
-                );
+                        "/swagger-ui/**", "/v3/api-docs/**");
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception
     {
         http
-                .csrf().disable()
+                .csrf()
+                .disable()
                 .cors()
                 .and()
-                .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .authorizeHttpRequests()
+
                 //User Controller Request Matchers
-                .requestMatchers(
-                        "/user/info",
-                        "/user/updateInfo")
+                .requestMatchers("/user/info", "/user/updateInfo")
                 .hasAuthority("USER")
 
                 //Alram Controller Request Matchers
-                .requestMatchers(
-                        "/alram/save",
-                        "/alram/findAlrams")
+                .requestMatchers("/alram/save", "/alram/findAlrams")
                 .hasAuthority("USER")
 
                 //Review Controller Request Matchers
-                .requestMatchers(
-                        "/review/save",
-                        "review/delete")
+                .requestMatchers("/review/save", "review/delete")
                 .hasAuthority("USER")
 
-                .anyRequest().authenticated()
+                .anyRequest()
+                .authenticated()
                 .and()
                 .addFilterBefore(new JwtAuthenticationFilter(jwtTokenService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new GlobalFilterExceptionHandler(objectMapper), JwtAuthenticationFilter.class);

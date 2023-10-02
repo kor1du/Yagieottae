@@ -2,6 +2,7 @@ package com.yagieottae_back_end.Controller.User;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yagieottae_back_end.Component.TestBase;
 import com.yagieottae_back_end.Configuration.TestMockConfig;
 import com.yagieottae_back_end.Dto.ResponseDto;
 import com.yagieottae_back_end.Dto.UserDto;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.lang.reflect.Field;
@@ -32,69 +34,58 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Import({TestMockConfig.class})
-@Slf4j
-@Transactional
-public class TestSignup
+public class TestSignup extends TestBase
 {
+    private final String url = "/user/signup";
     private UserDto.Signup signupDto;
-    private CustomBadRequestException customBadRequestException;
-    private ResponseDto expectedResponseDto;
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private MockMvc mockMvc;
-    @Autowired
-    private ModelMapper modelMapper;
-    @Autowired
-    private ObjectMapper objectMapper;
-    @Autowired
-    private GlobalControllerExceptionHandler globalControllerExceptionHandler;
-
-    @BeforeEach
-    public void beforeEach(TestInfo testInfo)
-    {
-        log.info("{} 테스트 시작", testInfo.getDisplayName());
-        initializeTestData();
-    }
 
     //mockTest
-    private void doMockTest(ResponseDto expectedResponseDto, ResultMatcher status) throws Exception
+    private ResultActions excuteMockTest() throws Exception
     {
-        MvcResult result = mockMvc.perform(post("/user/signup")
-                                          .content(objectMapper.writeValueAsString(signupDto))
-                                          .contentType(MediaType.APPLICATION_JSON))
-                                  .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
-                                  .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()))
-                                  .andReturn();
+        return mockMvc.perform(post("/user/signup")
+                .content(objectMapper.writeValueAsString(signupDto))
+                .contentType(MediaType.APPLICATION_JSON));
+    }
 
-        String responseString = result.getResponse().getContentAsString();
+    private void validateServerResponse(ResultActions resultActions) throws Exception
+    {
+        resultActions
+                .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
+                .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()))
+                .andReturn();
+
+        String responseString = resultActions
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         JsonNode responseJson = objectMapper.readTree(responseString);
 
         System.out.println("서버 응답: \n" + responseJson.toPrettyString());
     }
 
     //데이터 초기화
-    private void initializeTestData()
+    private void setDefaultSignupDto()
     {
-        signupDto = UserDto.Signup.builder()
-                                  .userId("testUserId")
-                                  .password("testPassword")
-                                  .passwordConfirm("testPassword")
-                                  .nickname("testNickname")
-                                  .address("testAddress")
-                                  .addressDetail("testAddressDetail")
-                                  .phone("010-1234-1234")
-                                  .build();
+        signupDto = UserDto.Signup
+                .builder()
+                .userId("testUserId")
+                .password("testPassword")
+                .passwordConfirm("testPassword")
+                .nickname("testNickname")
+                .address("testAddress")
+                .addressDetail("testAddressDetail")
+                .phone("010-1234-1234")
+                .build();
     }
 
     //Field 유효성 검사용 메서드
-    private static Stream<Arguments> validationTestCases()
+    private static Stream<Arguments> validateTestCases()
     {
+        //@formatter:off
         return Stream.of(
                 Arguments.of("userId", null, "아이디를 입력해주세요!"),
                 Arguments.of("userId", "", "아이디를 입력해주세요!"),
@@ -109,78 +100,102 @@ public class TestSignup
                 Arguments.of("addressDetail", null, "상세 주소를 입력해주세요!"),
                 Arguments.of("addressDetail", "", "상세 주소를 입력해주세요!"),
                 Arguments.of("phone", null, "전화번호를 입력해주세요!"),
-                Arguments.of("phone", "", "전화번호를 입력해주세요!")
-        );
+                Arguments.of("phone", "", "전화번호를 입력해주세요!"));
+        //@formatter:on
     }
 
     @Test
     @DisplayName("[200][회원가입]")
-    @Transactional
-    public void test_Signup() throws Exception
+    public void signup() throws Exception
     {
-        expectedResponseDto = ResponseDto
-                .builder()
-                .httpStatus(HttpStatus.OK.value())
-                .message("회원가입에 성공하였습니다. 약이어때의 회원이 되신걸 환영합니다!")
-                .build();
+        //given
+        setExpectedResponseDto(HttpStatus.OK.value(), "회원가입에 성공하였습니다. 약이어때의 회원이 되신걸 환영합니다!", null);
 
-        doMockTest(expectedResponseDto, status().isOk());
+        setDefaultSignupDto();
+
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
+        userRepository
+                .findByUserId(signupDto.getUserId())
+                .orElseThrow(() -> new CustomBadRequestException("회원가입한 유저가 존재하지 않습니다."));
     }
 
     @Test
     @DisplayName("[400][회원가입] 입력한 비밀번호와 확인용 비밀번호가 불일치")
-    public void test_Signup_PasswordNotEqualsPasswordConfirm() throws Exception
+    public void passwordNotEqualsPasswordConfirm() throws Exception
     {
+        //given
+        setDefaultSignupDto();
+
         signupDto.setPasswordConfirm("notEqualPassword");
 
-        customBadRequestException = new CustomBadRequestException("비밀번호와 확인용 비밀번호가 다릅니다!");
-        expectedResponseDto = globalControllerExceptionHandler.handleBadRequestException(customBadRequestException).getBody();
+        setExpectedResponseDto(HttpStatus.BAD_REQUEST.value(), "비밀번호와 확인용 비밀번호가 다릅니다!", null);
 
-        doMockTest(expectedResponseDto, status().isBadRequest());
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 
     @Test
     @DisplayName("[400][회원가입] 아이디 중복")
-    public void test_Signup_UserIdAlreadyExists() throws Exception
+    public void userIdAlreadyExists() throws Exception
     {
+        //given
+        setDefaultSignupDto();
+
         signupDto.setUserId("user");
 
-        customBadRequestException = new CustomBadRequestException("입력하신 아이디와 중복되는 아이디가 존재합니다. 다른 아이디를 사용해주세요.");
-        expectedResponseDto = globalControllerExceptionHandler.handleBadRequestException(customBadRequestException).getBody();
+        setExpectedResponseDto(HttpStatus.BAD_REQUEST.value(), "입력하신 아이디와 중복되는 아이디가 존재합니다. 다른 아이디를 사용해주세요.", null);
 
-        doMockTest(expectedResponseDto, status().isBadRequest());
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 
     @Test
     @DisplayName("[400][회원가입] 별명 중복")
-    public void test_Signup_NicknameAlreadyExists() throws Exception
+    public void nicknameAlreadyExists() throws Exception
     {
-        signupDto.setNickname("별명");
+        //given
+        setDefaultSignupDto();
 
-        customBadRequestException = new CustomBadRequestException("입력하신 별명을 사용하는 유저가 존재합니다. 다른 별명을 사용해주세요!");
-        expectedResponseDto = globalControllerExceptionHandler.handleBadRequestException(customBadRequestException).getBody();
+        signupDto.setNickname("유저");
 
-        doMockTest(expectedResponseDto, status().isBadRequest());
+        setExpectedResponseDto(HttpStatus.BAD_REQUEST.value(), "입력하신 별명을 사용하는 유저가 존재합니다. 다른 별명을 사용해주세요!", null);
+
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 
     @ParameterizedTest
-    @MethodSource("validationTestCases")
+    @MethodSource("validateTestCases")
     @DisplayName("[400][회원가입] 필드 유효성 검증")
     public void test_Signup_ValidationCheck(String field, String value, String errorMessage) throws Exception
     {
-        customBadRequestException = new CustomBadRequestException(errorMessage);
-        expectedResponseDto = globalControllerExceptionHandler.handleBadRequestException(customBadRequestException).getBody();
+        //given
+        setDefaultSignupDto();
+        setExpectedResponseDto(HttpStatus.BAD_REQUEST.value(), errorMessage, null);
 
-        Field fieldToSet = signupDto.getClass().getDeclaredField(field);
+        Field fieldToSet = signupDto
+                .getClass()
+                .getDeclaredField(field);
         fieldToSet.setAccessible(true);
         fieldToSet.set(signupDto, value);
 
-        doMockTest(expectedResponseDto, status().isBadRequest());
-    }
+        //when
+        ResultActions resultActions = excuteMockTest();
 
-    @AfterEach
-    public void afterEach(TestInfo testInfo)
-    {
-        log.info("{} 테스트 끝", testInfo.getDisplayName());
+        //then
+        validateServerResponse(resultActions);
     }
 }

@@ -26,9 +26,9 @@ public class UserController
 
     // 로그아웃
     @PostMapping("/logout")
-    public ResponseEntity<ResponseDto> logout(@Valid @RequestBody UserDto.Logout logoutDto)
+    public ResponseEntity<ResponseDto> logout(@RequestParam String accessToken)
     {
-        return ResponseEntity.ok(userService.logout(logoutDto));
+        return ResponseEntity.ok(userService.logout(accessToken));
     }
 
     // 회원가입

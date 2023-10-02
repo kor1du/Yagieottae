@@ -17,6 +17,10 @@ public interface AlramRepository extends JpaRepository<Alram, Long>
     @Query("SELECT a FROM Alram a WHERE a.user.id = :userId AND a.pill.id = :pillId")
     Optional<Alram> findExsistingAlram(Long userId, Long pillId);
 
+    //마지막 알람 조회
+    @Query("SELECT a FROM Alram a JOIN FETCH a.pill ORDER BY a.id DESC LIMIT 1")
+    Optional<Alram> findLastAlram();
+
     //오늘 날짜의 Alram 리스트만 조회
     @Query(value = "SELECT a FROM Alram a JOIN FETCH a.pill WHERE a.user.id = :userId AND a.days LIKE %:today%")
     Optional<List<Alram>> findTodayAlrams(Long userId, int today);

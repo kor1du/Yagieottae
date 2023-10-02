@@ -19,16 +19,6 @@ public class UserDto
         private String password; //비밀번호
     }
 
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class Logout
-    {
-        @NotEmpty(message = "로그아웃할 회원 정보가 존재하지 않습니다!")
-        public String accessToken;
-    }
-
     //유저 정보
     @Data
     @NoArgsConstructor
@@ -37,8 +27,6 @@ public class UserDto
     @ToString
     public static class Info
     {
-        @NotEmpty(message = "아이디를 입력해주세요!")
-        private String userId; //아이디
         @NotEmpty(message = "별명을 입력해주세요!")
         private String nickname; //별명
         @NotEmpty(message = "주소를 입력해주세요!")

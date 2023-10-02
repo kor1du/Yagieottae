@@ -12,6 +12,7 @@ import com.yagieottae_back_end.Exception.CustomBadRequestException;
 import com.yagieottae_back_end.Jwt.JwtCustomUserDetails;
 import com.yagieottae_back_end.Jwt.JwtCustomUserDetailsService;
 import com.yagieottae_back_end.Jwt.JwtTokenService;
+import com.yagieottae_back_end.Repository.UserRepository;
 import com.yagieottae_back_end.Service.UserService;
 import com.yagieottae_back_end.Util.TestTokenUtil;
 import lombok.AllArgsConstructor;
@@ -39,49 +40,59 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.util.Collections;
 import java.util.List;
 
 @RequiredArgsConstructor
+@SpringBootTest
+@Import({TestMockConfig.class})
 @Slf4j
 public class TestBase
 {
-    protected ResponseDto expectedResponseDto;
-    protected String accessToken;
-    protected String refreshToken;
+    protected final MultiValueMap<String, String> params = new LinkedMultiValueMap<>(); //Parameter List
+    protected ResponseDto expectedResponseDto; //예상되는 서버 응답
+    protected User user; //유저 객체
+    protected String accessToken; //jwtAccessToken
+    protected String refreshToken; //jwtRefreshToken
     @Autowired
-    protected MockMvc mockMvc;
+    protected MockMvc mockMvc; //Mock 객체
     @Autowired
-    protected ModelMapper modelMapper;
+    protected ModelMapper modelMapper; //객체 Mapper
     @Autowired
-    protected ObjectMapper objectMapper;
+    protected ObjectMapper objectMapper; //Object ↔ JSON Mapper
     @Autowired
-    protected JwtTokenService jwtTokenService;
+    protected JwtTokenService jwtTokenService; //jwtToken 생성,인증 관련 Service
+    @Autowired
+    private UserRepository userRepository; //userRepository
 
+    //테스트전 실행
     @BeforeEach
-    public void beforeEach(TestInfo testInfo) throws Exception
+    public void beforeTest(TestInfo testInfo) throws Exception
     {
         log.info("{} 테스트 시작", testInfo.getDisplayName());
         initializeTestBaseData();
     }
 
+    //테스트 후 실행
     @AfterEach
-    public void afterEach(TestInfo testInfo)
+    public void afterTest(TestInfo testInfo)
     {
         log.info("{} 테스트 끝", testInfo.getDisplayName());
     }
 
+    //예상 응답값 세팅
     protected void setExpectedResponseDto(int httpStatusCode, String message, ObjectNode body)
     {
-        if (body == null)
+        if (body == null) //body 없음(응답에 응답 코드와 메시지만 존재)
         {
             expectedResponseDto = ResponseDto.builder()
                                              .httpStatus(httpStatusCode)
                                              .message(message)
                                              .build();
-        } else
+        } else //body 존재(응답에 응답 코드, 메시지, body가 존재)
         {
             expectedResponseDto = ResponseDto.builder()
                                              .httpStatus(httpStatusCode)
@@ -101,6 +112,7 @@ public class TestBase
         refreshToken = jwtTokenDto.getRefreshToken();
     }
 
+    //유저 인증 객체 반환
     private Authentication getUserAuthentication(String userId, String password, String authority)
     {
         SimpleGrantedAuthority simpleGrantedAuthority = new SimpleGrantedAuthority(authority);
@@ -112,11 +124,13 @@ public class TestBase
         return authenticationToken;
     }
 
+    //테스트에 필요한 데이터들 초기화
     protected void initializeTestBaseData()
     {
         try
         {
-            setAuthorizationDatas("user", "1234", "USER");
+            user = userRepository.findById(1L).orElseThrow(()->new Exception("테스트에 사용될 유저 객체가 존재하지 않습니다!")); //유저 객체 초기화
+            setAuthorizationDatas(user.getUserId(), user.getPassword(), user.getRole().toString());
         } catch (Exception e)
         {
             throw new RuntimeException(e);

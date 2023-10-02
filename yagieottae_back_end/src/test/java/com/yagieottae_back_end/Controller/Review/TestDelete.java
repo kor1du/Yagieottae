@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -21,66 +22,80 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@Import({TestMockConfig.class})
-@Slf4j
 public class TestDelete extends TestBase
 {
-    private String reviewId;
+    private final String url = "/review/delete";
 
-    //테스트 데이터 생성자로 초기화
-    TestDelete()
+    private ResultActions excuteMockTest() throws Exception
     {
-        reviewId = "1";
+        return mockMvc.perform(delete(url)
+                .params(params)
+                .header("Authorization", "Bearer " + accessToken));
     }
 
-    private void doMockTest(ResponseDto expectedResponseDto, ResultMatcher status) throws Exception
+    //서버 응답 검증
+    private void validateServerResponse(ResultActions resultActions) throws Exception
     {
-        MvcResult result = mockMvc.perform(delete("/review/delete")
-                                          .param("reviewId", reviewId)
-                                          .header("Authorization", "Bearer " + accessToken))
-                                  .andExpect(status)
-                                  .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
-                                  .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()))
-                                  .andReturn();
+        resultActions
+                .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
+                .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()));
 
-        String responseString = result.getResponse().getContentAsString();
+        String responseString = resultActions
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         JsonNode responseJson = objectMapper.readTree(responseString);
 
-        System.out.println("서버 응답: \n" + responseJson.toPrettyString());
+        System.out.println("result \n" + responseJson.toPrettyString());
     }
 
     @Test
     @DisplayName("[200][리뷰 삭제]")
-    @Transactional
-    public void test_Delete() throws Exception
+    public void deleteReview() throws Exception
     {
+        //given
+        params.add("reviewId", "1");
+
         setExpectedResponseDto(HttpStatus.OK.value(), "리뷰가 삭제되었습니다.", null);
 
-        doMockTest(expectedResponseDto, status().isOk());
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 
     @Test
     @DisplayName("[400][리뷰 삭제] 존재하지 않는 리뷰 삭제")
-    @Transactional
-    public void test_Delete_NotFound() throws Exception
+    public void notFound() throws Exception
     {
-        reviewId = "-1";
+        //given
+        params.add("reviewId", "-1");
 
         setExpectedResponseDto(HttpStatus.BAD_REQUEST.value(), "해당 리뷰가 존재하지 않습니다!", null);
 
-        doMockTest(expectedResponseDto, status().isBadRequest());
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 
     @Test
     @DisplayName("[400][리뷰 삭제] 다른 유저가 삭제 요청")
-    @Transactional
-    public void test_Delete_AnotherUserRequestedDeletion() throws Exception
+    public void anotherUserRequestedDeletion() throws Exception
     {
+        //given
+        params.add("reviewId", "1");
+
         setAuthorizationDatas("userWithoutPermission", "1234", "USER");
 
         setExpectedResponseDto(HttpStatus.BAD_REQUEST.value(), "삭제 권한이 존재하지 않습니다!", null);
 
-        doMockTest(expectedResponseDto, status().isBadRequest());
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 }

@@ -30,6 +30,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.lang.reflect.Field;
@@ -41,35 +42,45 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@Import({TestMockConfig.class})
-@Slf4j
 public class TestRead extends TestBase
 {
-    //mockTest
-    private void doMockTest(ResponseDto expectedResponseDto, ResultMatcher status) throws Exception
-    {
-        MvcResult result = mockMvc.perform(get("/review/read")
-                                          .param("pillId", "3488"))
-                                  .andExpect(status)
-                                  .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
-                                  .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()))
-                                  .andReturn();
+    private final String url = "/review/read";
 
-        String responseString = result.getResponse().getContentAsString();
+    //mockTest
+    private ResultActions excuteMockTest() throws Exception
+    {
+        return mockMvc.perform(get(url).params(params));
+    }
+
+    //서버 응답 검증
+    private void validateServerResponse(ResultActions resultActions) throws Exception
+    {
+        resultActions
+                .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
+                .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()));
+
+        String responseString = resultActions
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         JsonNode responseJson = objectMapper.readTree(responseString);
 
-        System.out.println("서버 응답: \n" + responseJson.toPrettyString());
+        System.out.println("result \n" + responseJson.toPrettyString());
     }
 
     @Test
     @DisplayName("[200][리뷰 조회]")
-    @Transactional
-    public void test_Read() throws Exception
+    public void read() throws Exception
     {
+        //given
         setExpectedResponseDto(HttpStatus.OK.value(), "리뷰 목록 조회 성공", null);
+        params.add("pillId", "1");
 
-        doMockTest(expectedResponseDto, status().isOk());
+        //when
+        ResultActions resultActions = excuteMockTest();
+
+        //then
+        validateServerResponse(resultActions);
     }
 }
 

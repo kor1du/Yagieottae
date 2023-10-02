@@ -1,14 +1,13 @@
 package com.yagieottae_back_end.Dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
+import lombok.*;
 
 import java.util.Date;
 
-@Builder
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class JwtTokenDto
 {
     private String grantType;

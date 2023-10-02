@@ -5,11 +5,13 @@ import com.yagieottae_back_end.Exception.CustomBadRequestException;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -21,6 +23,7 @@ import java.security.Key;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
@@ -32,7 +35,7 @@ public class JwtTokenService
 
     private final Key key;
 
-//    private static final long ACCESS_TOKEN_EXPIRE_TIME = 5000L; //5초
+    //    private static final long ACCESS_TOKEN_EXPIRE_TIME = 5000L; //5초
 
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 60 * 60 * 1000L; //1시간
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 7 * 24 * 60 * 60 * 1000L; //7일
@@ -83,7 +86,7 @@ public class JwtTokenService
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        return JwtTokenDto
+        JwtTokenDto jwtTokenDto = JwtTokenDto
                 .builder()
                 .grantType("Bearer")
                 .accessToken(accessToken)
@@ -91,6 +94,23 @@ public class JwtTokenService
                 .accessTokenExpireMs(accessTokenExpireMs)
                 .refreshTokenExpireMs(refreshTokenExpireMs)
                 .build();
+
+        setRefreshTokenToRedis(authentication.getName(), jwtTokenDto);
+
+        return jwtTokenDto;
+    }
+
+    //redis에 RefreshToken 정보 저장
+    private void setRefreshTokenToRedis(String userId, JwtTokenDto jwtTokenDto)
+    {
+        redisTemplate.opsForValue() //redis에 refreshToken 정보 저장
+                .set("RT:" + userId, //redis 키값
+                        jwtTokenDto.getRefreshToken(), //redis 내용
+                        jwtTokenDto
+                                .getRefreshTokenExpireMs()
+                                .getTime(), //redis 만료시간
+                        TimeUnit.MILLISECONDS //시간단위
+                );
     }
 
     /**
@@ -109,7 +129,8 @@ public class JwtTokenService
                     .build()
                     .parseClaimsJws(accessToken)
                     .getBody();
-        } catch (ExpiredJwtException e)
+        }
+        catch (ExpiredJwtException e)
         {
             return e.getClaims();
         }
@@ -179,19 +200,23 @@ public class JwtTokenService
                     .build()
                     .parseClaimsJws(token);
             return true;
-        } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e)
+        }
+        catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e)
         {
             log.info("Invalid JWT Token", e);
             throw new JwtException("잘못된 JWT 시그니처");
-        } catch (ExpiredJwtException e)
+        }
+        catch (ExpiredJwtException e)
         {
             log.info("Expired JWT Token", e);
             throw new JwtException("만료된 JWT 토큰");
-        } catch (UnsupportedJwtException e)
+        }
+        catch (UnsupportedJwtException e)
         {
             log.info("Unsupported JWT Token", e);
             throw new JwtException("지원하지 않는 JWT 토큰");
-        } catch (IllegalArgumentException e)
+        }
+        catch (IllegalArgumentException e)
         {
             log.info("JWT claims string is empty", e);
             throw new JwtException("값이 없음");
