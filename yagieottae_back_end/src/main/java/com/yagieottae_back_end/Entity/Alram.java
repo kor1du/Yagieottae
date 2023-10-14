@@ -30,7 +30,7 @@ public class Alram
     private String alramTime; // 알람 예정 시간
 
     @NotNull
-    private String days; // 요일 반복 1:월, 2:화, 3:수, 4:목, 5:금, 6:토, 7:일
+    private String days; // 요일 반복 월, 화, 수, 목, 금, 토, 일
 
     @NotNull
     private Boolean beforeMeal; // true:식전 복용 false: 식후 복용

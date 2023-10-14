@@ -1,13 +1,13 @@
 import './App.css';
 import { Route, Routes } from 'react-router-dom';
 import Main from 'pages/Main';
-import './styles/common/common.scss';
+import 'components/common/styles/common.scss';
 import Nav from 'components/nav/Nav';
-import Login from 'pages/Login';
-import Signup from 'pages/Signup';
+import Signup from 'pages/SignupPage';
 import MyPage from 'pages/MyPage';
 import PageNotFound from 'pages/PageNotFound';
 import RequireAuth from 'pages/RequireAuth';
+import LoginPage from 'pages/LoginPage';
 
 function App()
 {
@@ -16,7 +16,7 @@ function App()
 			<Nav />
 			<Routes>
 				<Route path="/" element={<Main />} />
-				<Route path="/user/login" element={<Login />} />
+				<Route path="/user/login" element={<LoginPage />} />
 				<Route path="/user/signup" element={<Signup />} />
 				<Route path="/user/mypage" element={
 					<RequireAuth>

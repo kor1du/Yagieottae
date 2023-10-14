@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { getCookie, removeCookie, setCookie } from './Cookies';
+import { Server_URL } from 'constants/ServerURL';
 
-const backEndURL = "http://localhost:8080";
-const refreshURL = backEndURL + "/user/reissue";
+const refreshURL = Server_URL + "/user/reissue";
 
 const axiosInstance = axios.create({
-    baseURL: backEndURL,
+    baseURL: Server_URL,
 });
 
 axiosInstance.interceptors.request.use(

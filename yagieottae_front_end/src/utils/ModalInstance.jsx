@@ -1,5 +1,5 @@
 import { Modal } from "react-bootstrap";
-import "styles/common/modal.scss";
+import "components/common/styles/modal.scss";
 import { useDispatch, useSelector } from "react-redux";
 import { addModal, removeModal } from "redux/reducers/ModalReducer";
 

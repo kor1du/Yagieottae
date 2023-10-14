@@ -1,0 +1,35 @@
+@import './flex.scss';
+@import url('https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap');
+
+@font-face {
+	font-family: SCDream5;
+	src: url('../../../assets/fonts/SCoreDream/SCDream5.otf');
+}
+
+* {
+	font-family: SCDream5;
+}
+
+.container {
+	margin-top: 100px;
+	min-height: calc(100vh - 100px);
+}
+
+a {
+	text-decoration: none !important;
+	color: black !important;
+}
+
+::-webkit-scrollbar {
+	width: 10px; /* 스크롤바의 너비 */
+}
+
+::-webkit-scrollbar-thumb {
+	height: 30%; /* 스크롤바의 길이 */
+	background: #217af4; /* 스크롤바의 색상 */
+	border-radius: 10px;
+}
+
+::-webkit-scrollbar-track {
+	background: rgba(33, 122, 244, 0.1); /*스크롤바 뒷 배경 색상*/
+}

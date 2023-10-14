@@ -1,10 +1,10 @@
-import { isLoggedIn } from "components/user/User";
+import { IsLoggedIn } from "utils/IsLoggedIn";
 
 const { Navigate } = require("react-router-dom");
 
 function RequireAuth({ children })
 {
-    if (!isLoggedIn())
+    if (!IsLoggedIn())
     {
         alert("로그인이 필요합니다!");
         return <Navigate to="/user/login" />;

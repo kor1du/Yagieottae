@@ -67,7 +67,7 @@ public class SecurityConfig
 
                 //User Controller Request Matchers
                 .requestMatchers("/user/info", "/user/updateInfo")
-                .hasAuthority("USER")
+                .hasAnyAuthority("USER", "ADMIN")
 
                 //Alram Controller Request Matchers
                 .requestMatchers("/alram/save", "/alram/findAlrams")

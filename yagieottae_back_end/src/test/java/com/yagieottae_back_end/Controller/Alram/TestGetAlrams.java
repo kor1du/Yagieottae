@@ -2,6 +2,7 @@ package com.yagieottae_back_end.Controller.Alram;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.yagieottae_back_end.Component.TestBase;
+import com.yagieottae_back_end.Dto.AlramDto;
 import com.yagieottae_back_end.Entity.Alram;
 import com.yagieottae_back_end.Repository.AlramRepository;
 import com.yagieottae_back_end.Util.JsonUtil;
@@ -13,7 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.time.LocalDate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -36,19 +40,29 @@ public class TestGetAlrams extends TestBase
     private void validateServerResponse(ResultActions resultActions) throws Exception
     {
         resultActions
-            .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
-            .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()));
+                .andExpect(jsonPath("$.httpStatus").value(expectedResponseDto.getHttpStatus()))
+                .andExpect(jsonPath("$.message").value(expectedResponseDto.getMessage()));
 
-        String responseString = resultActions.andReturn().getResponse().getContentAsString();
+        String responseString = resultActions
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         JsonNode responseJson = objectMapper.readTree(responseString);
 
-        if (!responseJson.get("body").isNull()) //body 검증
+        if (!responseJson
+                .get("body")
+                .isNull()) //body 검증
         {
             JsonNode responseBody = responseJson.get("body");
 
             if (responseBody.get("alrams") != null)
             {
-                Assertions.assertEquals(responseBody.get("alrams").toString(), expectedResponseDto.getBody().get("alrams").toString());
+                Assertions.assertEquals(responseBody
+                        .get("alrams")
+                        .toString(), expectedResponseDto
+                        .getBody()
+                        .get("alrams")
+                        .toString());
             }
         }
 
@@ -62,11 +76,14 @@ public class TestGetAlrams extends TestBase
         //given
         params.set("getToday", "true");
 
-        LocalDate date = LocalDate.now(); //현재 시간
-        int today = date.getDayOfWeek().getValue(); //현재 시간의 요일 (1:월, 2:화,...,6:토,7:일)
-        List<Alram> alramList = alramRepository.findTodayAlrams(user.getId(), today).get();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        String dayOfWeek = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.KOREAN);
+        List<AlramDto.Response> alramList = alramRepository
+                .findTodayAlrams(user.getId(), dayOfWeek)
+                .get();
 
-        setExpectedResponseDto(HttpStatus.OK.value(),"알람 조회 성공", JsonUtil.ObjectToJsonObject("alrams",alramList));
+        setExpectedResponseDto(HttpStatus.OK.value(), "알람 조회 성공", JsonUtil.ObjectToJsonObject("alrams", alramList));
 
         //when
         ResultActions resultActions = excuteMockTest();
@@ -81,9 +98,11 @@ public class TestGetAlrams extends TestBase
     {
         //given
         params.set("getToday", "false");
-        List<Alram> alramList = alramRepository.findAllAlrams(user.getId()).get(); //전체 알람 목록을 DB에서 조회
+        List<AlramDto.Response> alramList = alramRepository
+                .findAllAlrams(user.getId())
+                .get(); //전체 알람 목록을 DB에서 조회
 
-        setExpectedResponseDto(HttpStatus.OK.value(),"알람 조회 성공", JsonUtil.ObjectToJsonObject("alrams",alramList));
+        setExpectedResponseDto(HttpStatus.OK.value(), "알람 조회 성공", JsonUtil.ObjectToJsonObject("alrams", alramList));
 
         //when
         ResultActions resultActions = excuteMockTest();

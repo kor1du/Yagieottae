@@ -21,11 +21,36 @@ public interface AlramRepository extends JpaRepository<Alram, Long>
     @Query("SELECT a FROM Alram a JOIN FETCH a.pill ORDER BY a.id DESC LIMIT 1")
     Optional<Alram> findLastAlram();
 
+    //@formatter:off
     //오늘 날짜의 Alram 리스트만 조회
-    @Query(value = "SELECT a FROM Alram a JOIN FETCH a.pill WHERE a.user.id = :userId AND a.days LIKE %:today%")
-    Optional<List<Alram>> findTodayAlrams(Long userId, int today);
+    @Query(value =
+            "SELECT " +
+            "a.id as id, " +
+            "a.alramTime as alramTime, " +
+            "a.days as days, " +
+            "a.beforeMeal as beforeMeal, " +
+            "a.dosingTime as dosingTime, " +
+            "p as pill " +
+            "FROM Alram a " +
+            "JOIN Pill p on a.pill.id = p.id " +
+            "WHERE a.user.id = :userId AND a.days LIKE %:dayOfWeek%")
+    //@formatter:on
+    Optional<List<AlramDto.Response>> findTodayAlrams(Long userId, String dayOfWeek);
 
     //전체 날짜의 Alram 리스트 조회
-    @Query(value = "SELECT a FROM Alram a JOIN FETCH a.pill WHERE a.user.id = :userId")
-    Optional<List<Alram>> findAllAlrams(Long userId);
+    //@formatter:off
+    //오늘 날짜의 Alram 리스트만 조회
+    @Query(value =
+            "SELECT " +
+            "a.id as id, " +
+            "a.alramTime as alramTime, " +
+            "a.days as days, " +
+            "a.beforeMeal as beforeMeal, " +
+            "a.dosingTime as dosingTime, " +
+            "p as pill " +
+            "FROM Alram a " +
+            "JOIN Pill p on a.pill.id = p.id " +
+            "WHERE a.user.id = :userId")
+    //@formatter:on
+    Optional<List<AlramDto.Response>> findAllAlrams(Long userId);
 }

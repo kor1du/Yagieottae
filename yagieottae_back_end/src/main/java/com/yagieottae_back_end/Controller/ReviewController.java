@@ -5,6 +5,7 @@ import com.yagieottae_back_end.Dto.ReviewDto;
 import com.yagieottae_back_end.Service.ReviewService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,9 +23,9 @@ public class ReviewController
     }
 
     @GetMapping("/read")
-    public ResponseEntity<ResponseDto> read(@RequestParam Long pillId)
+    public ResponseEntity<ResponseDto> read(@RequestParam Long pillId, Pageable page)
     {
-        return ResponseEntity.ok(reviewService.read(pillId));
+        return ResponseEntity.ok(reviewService.read(pillId, page));
     }
 
     @DeleteMapping("/delete")

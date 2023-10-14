@@ -19,8 +19,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 @RequiredArgsConstructor
@@ -100,7 +102,7 @@ public class AlramService
     public ResponseDto getAlrams(Boolean getToday)
     {
         ResponseDto returnValue;
-        List<Alram> alramList;
+        List<AlramDto.Response> alramList;
 
         try
         {
@@ -108,12 +110,11 @@ public class AlramService
 
             if (getToday) //오늘 날짜의 알람 목록들만 가져와야 한다면
             {
-                LocalDate date = LocalDate.now(); //현재 시간
-                int today = date
-                        .getDayOfWeek()
-                        .getValue(); //현재 시간의 요일 (1:월, 2:화,...,6:토,7:일)
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTime(new Date());
+                String dayOfWeek = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.KOREAN);
                 alramList = alramRepository
-                        .findTodayAlrams(user.getId(), today)
+                        .findTodayAlrams(user.getId(), dayOfWeek)
                         .get();
             }
             else //현재 요일에 상관없이 알람 목록을 가져와야 한다면

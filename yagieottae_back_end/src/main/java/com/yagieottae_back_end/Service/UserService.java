@@ -260,7 +260,7 @@ public class UserService
 
             //@formatter:off
             if (!user.getNickname().equals(userInfo.getNickname()) && userRepository.findByNickname(userInfo.getNickname()).isPresent()) //별명 중복체크
-                // @formatter:on
+            // @formatter:on
             {
                 throw new CustomBadRequestException("입력하신 별명을 사용하는 유저가 존재합니다. 다른 별명을 사용해주세요!");
             }

@@ -109,12 +109,51 @@ INSERT
     VALUES (
             '06:30',
             1,
-            '1,2,3,4,5,6,7',
+            '월,화,수,목,금,토,일',
             30L,
             NOW(),
             NOW(),
             1L,
             1L
+            );
+
+INSERT
+    INTO alram (alram_time,before_meal,days,dosing_time,edit_date,reg_date,user_id,pill_id)
+    VALUES (
+            '06:30',
+            1,
+            '토',
+            30L,
+            NOW(),
+            NOW(),
+            1L,
+            2L
+            );
+
+INSERT
+    INTO alram (alram_time,before_meal,days,dosing_time,edit_date,reg_date,user_id,pill_id)
+    VALUES (
+            '06:30',
+            1,
+            '월',
+            30L,
+            NOW(),
+            NOW(),
+            1L,
+            3L
+            );
+
+INSERT
+    INTO alram (alram_time,before_meal,days,dosing_time,edit_date,reg_date,user_id,pill_id)
+    VALUES (
+            '06:30',
+            1,
+            '월',
+            30L,
+            NOW(),
+            NOW(),
+            2L,
+            3L
             );
 
 --REVIEW DATA

@@ -1,19 +1,19 @@
 import { FaBars, FaUser, FaUserCircle } from 'react-icons/fa';
-import 'styles/nav/nav.scss';
-import { useSelector } from 'react-redux';
+import 'components/nav/styles/nav.scss';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AiTwotoneHome } from 'react-icons/ai';
-import { isLoggedIn, logout } from 'components/user/User';
 import { HiOutlineLogout } from 'react-icons/hi';
 import Logo from 'assets/imgs/logo.png'
 import { Button } from 'react-bootstrap';
+import { Server_URL } from 'constants/ServerURL';
+import UseNav from './hooks/UseNav';
+import { IsLoggedIn } from 'utils/IsLoggedIn';
+import { Logout } from 'utils/Logout';
 
 function Nav()
 {
-	const backEndURL = useSelector(state => state.ServerURLReducer.backEndURL);
-	const [showLeftSide, setShowLeftSide] = useState(false);
-	const toggleNavLeftSide = () => { showLeftSide === true ? setShowLeftSide(false) : setShowLeftSide(true); }
+	const { showLeftSide, toggleNavLeftSide } = UseNav();
 
 	return (
 		<div id="container-nav">
@@ -33,9 +33,9 @@ function Nav()
 						<AiTwotoneHome size="40" />
 						<span>홈으로</span>
 					</Link>
-					{isLoggedIn() ?
+					{IsLoggedIn() ?
 						<>
-							<Link onClick={() => { logout(backEndURL); toggleNavLeftSide(); }}>
+							<Link onClick={() => { Logout(Server_URL); toggleNavLeftSide(); }}>
 								<HiOutlineLogout size="40" />
 								<span>로그아웃</span>
 							</Link>

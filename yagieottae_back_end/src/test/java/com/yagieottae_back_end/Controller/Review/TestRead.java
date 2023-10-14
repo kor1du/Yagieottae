@@ -26,6 +26,8 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -74,7 +76,12 @@ public class TestRead extends TestBase
     {
         //given
         setExpectedResponseDto(HttpStatus.OK.value(), "리뷰 목록 조회 성공", null);
+
+        Pageable page = PageRequest.of(0, 2);
+
         params.add("pillId", "1");
+        params.add("page", String.valueOf(page.getOffset()));
+        params.add("size", String.valueOf(page.getPageSize()));
 
         //when
         ResultActions resultActions = excuteMockTest();

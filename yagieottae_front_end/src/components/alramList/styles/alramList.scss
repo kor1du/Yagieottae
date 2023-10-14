@@ -1,0 +1,55 @@
+#container-alram-list,
+.modal-view-all-alrams {
+	margin: 50px 0;
+
+	#text-today-durg-list {
+		margin: 10px 0;
+		font-size: 1.5rem;
+	}
+
+	.today-pill-list {
+		padding-left: 10px;
+	}
+
+	.today-pill {
+		width: 100%;
+		margin: 20px 0px;
+		padding: 5px 10px;
+		height: 275px;
+		border-radius: 15px;
+		border: 3px solid #e3e5e8;
+
+		.div-pill-info {
+			width: 100%;
+			.img-pills {
+				width: 55px;
+				height: 55px;
+				background-color: lightgray;
+				border-radius: 50%;
+				margin: 10px 5px 10px 0px;
+				border: 3px solid black;
+			}
+			.div-pill-name {
+				width: 100%;
+				.text-pill-name {
+					font-size: 1.3rem;
+					width: 100px;
+					margin: 0;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+			}
+		}
+
+		.div-pill-description {
+			width: 100%;
+			.btn-alram-description {
+				padding: 7px 10px;
+				width: 100%;
+				text-align: left;
+				margin: 5px 0;
+			}
+		}
+	}
+}
